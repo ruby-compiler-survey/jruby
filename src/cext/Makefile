@@ -1,7 +1,7 @@
 # -*- makefile -*-
 
-JRUBY_DIR = ../../jruby
-JRUBY_JAR = $(JRUBY_DIR)/lib/jruby-complete.jar
+JRUBY_BASEDIR = $(shell pwd)/../../
+JRUBY_CLASSES = $(JRUBY_BASEDIR)/build/classes/jruby/
 
 BUILD_OS := $(strip $(shell uname -s | tr '[:upper:]' '[:lower:]'))
 OS ?= $(BUILD_OS)
@@ -38,9 +38,9 @@ JNIEXT = so
 export MACOSX_DEPLOYMENT_TARGET=10.4
 
 CCACHE := $(strip $(realpath $(shell which ccache 2> /dev/null)))
-SRC_DIR ?= $(shell pwd)/src
-JNI_DIR ?= $(shell pwd)/src
-BUILD_DIR ?= $(shell pwd)/build
+SRC_DIR ?= $(JRUBY_BASEDIR)/src/cext/
+JNI_DIR ?= $(SRC_DIR)
+BUILD_DIR ?= $(JRUBY_BASEDIR)/lib/ruby/cext/
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst %.c, $(BUILD_DIR)/%.o, $(notdir $(SRCS)))
@@ -222,7 +222,7 @@ debug:
 	@echo "PLATFORM=$(PLATFORM)"
 	@echo "OBJS=$(OBJS)"
 
-$(LIBCEXT):  $(OBJS) $(CXXOBJS)
+$(LIBCEXT):  $(OBJS) $(CXXOBJS) $(BUILD_DIR)/ruby.h
 	$(CXX) -o $@ $(LDFLAGS) $(SOFLAGS) $(OBJS) $(CXXOBJS) $(LIBS)
 	
 
@@ -234,15 +234,17 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp  $(wildcard $(SRC_DIR)/*.h) $(JAVA_HDRS)
 	@mkdir -p $(@D)
 	$(CCACHE) $(CXX) $(CXXFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/ruby.h: $(SRC_DIR)/ruby.h
+	@cp $(SRC_DIR)/ruby.h $(BUILD_DIR)/ruby.h
 
 .SECONDARY: $(JAVA_HDRS)
 
-$(JAVA_HDRS):	$(JRUBY_JAR) 
+$(JAVA_HDRS):
 	@mkdir -p $(@D)
-	javah -classpath $(JRUBY_JAR) -d $(@D) $(subst _,., $(basename $(@F)))
+	javah -classpath $(JRUBY_CLASSES) -d $(@D) $(subst _,., $(basename $(@F)))
 
 
 .PHONY: clean
 clean:
-	$(RM) -rf build
+	$(RM) -rf $(BUILD_DIR)
 

@@ -1493,6 +1493,20 @@
     <mkdir dir="${build.dir}/nailmain"/>
   </target>
 
+  <property name="jruby-cext-native.home" value="${basedir}/src/cext/"/>
+
+  <target name="build-jruby-cext-native" depends="compile"
+    description="Build JRuby cext support">
+    <exec executable="make" dir="${jruby-cext-native.home}" failonerror="true"/>
+  </target>
+
+  <target name="clean-jruby-cext-native" depends="compile"
+    description="Build JRuby cext support">
+    <exec executable="make" dir="${jruby-cext-native.home}" failonerror="true">
+        <arg value="clean"/>
+    </exec>
+  </target>
+
   <target name="test-rails-stable" depends="jar"><rake task="test:rails"/></target>
   <target name="test-prawn" depends="jar"><rake task="test:prawn"/></target>
   <target name="bench-language" depends="jar"><rake task="bench:language"/></target>
