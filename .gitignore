@@ -50,4 +50,7 @@ glob_test
 spaces test
 .DS_Store
 lib/ruby/cext/
+*.so
+*.bundle
+*.[oa]
 
