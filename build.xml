@@ -1495,7 +1495,7 @@
 
   <property name="jruby-cext-native.home" value="${basedir}/src/cext/"/>
 
-  <target name="build-jruby-cext-native" depends="compile"
+  <target name="build-jruby-cext-native" depends="jar-complete"
     description="Build JRuby cext support">
     <exec executable="make" dir="${jruby-cext-native.home}" failonerror="true"/>
   </target>
