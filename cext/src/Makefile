@@ -38,9 +38,9 @@ JNIEXT = so
 export MACOSX_DEPLOYMENT_TARGET=10.4
 
 CCACHE := $(strip $(realpath $(shell which ccache 2> /dev/null)))
-SRC_DIR ?= $(JRUBY_BASEDIR)/src/cext/
+SRC_DIR ?= $(shell pwd)
 JNI_DIR ?= $(SRC_DIR)
-BUILD_DIR ?= $(JRUBY_BASEDIR)/lib/ruby/cext/
+BUILD_DIR ?= $(SRC_DIR)/../build/
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst %.c, $(BUILD_DIR)/%.o, $(notdir $(SRCS)))

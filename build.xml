@@ -1260,6 +1260,7 @@
     <include name="pom.xml"/>
     <include name="maven/**"/>
     <include name="gem/**"/>
+    <include name="cext/src/**"/>
     <exclude name="lib/jruby*.jar"/>
   </patternset>
 
@@ -1269,6 +1270,10 @@
     <include name="tool/nailgun/README.txt"/>
     <include name="tool/nailgun/ng.exe"/>
     <include name="tool/nailgun/src/**"/>
+  </patternset>
+
+  <patternset id="dist.jruby-cext-native.files">
+    <include name="cext/build/**"/>
   </patternset>
 
   <target name="dist-bin" depends="jar-dist">
@@ -1493,7 +1498,7 @@
     <mkdir dir="${build.dir}/nailmain"/>
   </target>
 
-  <property name="jruby-cext-native.home" value="${basedir}/src/cext/"/>
+  <property name="jruby-cext-native.home" value="${basedir}/cext/src/"/>
 
   <target name="build-jruby-cext-native" depends="jar-complete"
     description="Build JRuby cext support">
