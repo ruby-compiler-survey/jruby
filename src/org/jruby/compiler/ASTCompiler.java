@@ -912,7 +912,7 @@ public class ASTCompiler {
         
         floatDoubleIntrinsics.put("+", "op_plus");
         floatDoubleIntrinsics.put("-", "op_minus");
-        floatDoubleIntrinsics.put("/", "op_div");
+        floatDoubleIntrinsics.put("/", "op_fdiv");
         floatDoubleIntrinsics.put("*", "op_plus");
         floatDoubleIntrinsics.put("**", "op_pow");
         floatDoubleIntrinsics.put("<", "op_lt");
@@ -1004,14 +1004,14 @@ public class ASTCompiler {
                 Node argument = callNode.getArgsNode().childNodes().get(0);
                 if (argument instanceof FixnumNode) {
                     Map<String, String> typeLongIntrinsics = typeIntrinsics.get(FixnumNode.class);
-                    if (typeLongIntrinsics.containsKey(name)) {
+                    if (typeLongIntrinsics != null && typeLongIntrinsics.containsKey(name)) {
                         context.getInvocationCompiler().invokeFixnumLong(name, generation, receiverCallback, typeLongIntrinsics.get(name), ((FixnumNode)argument).getValue());
                         return true;
                     }
                 }
                 if (argument instanceof FloatNode) {
                     Map<String, String> typeDoubleIntrinsics = typeIntrinsics.get(FloatNode.class);
-                    if (typeDoubleIntrinsics.containsKey(name)) {
+                    if (typeDoubleIntrinsics != null && typeDoubleIntrinsics.containsKey(name)) {
                         context.getInvocationCompiler().invokeFloatDouble(name, generation, receiverCallback, typeDoubleIntrinsics.get(name), ((FloatNode)argument).getValue());
                         return true;
                     }
@@ -3578,13 +3578,18 @@ public class ASTCompiler {
                 } else {
                     context.loadNil();
                 }
+            }
+        };
 
-                if (rescueNode.getElseNode() != null) {
+        BranchCallback elseBody = null;
+        if (rescueNode.getElseNode() != null) {
+            elseBody = new BranchCallback() {
+                public void branch(BodyCompiler context) {
                     context.consumeCurrentValue();
                     compile(rescueNode.getElseNode(), context, true);
                 }
-            }
-        };
+            };
+        }
 
         BranchCallback rubyHandler = new BranchCallback() {
             public void branch(BodyCompiler context) {
@@ -3595,9 +3600,9 @@ public class ASTCompiler {
         ASTInspector rescueInspector = new ASTInspector();
         rescueInspector.inspect(rescueNode.getRescueNode());
         if (light) {
-            context.performRescueLight(body, rubyHandler, rescueInspector.getFlag(ASTInspector.RETRY));
+            context.performRescueLight(body, rubyHandler, elseBody, rescueInspector.getFlag(ASTInspector.RETRY));
         } else {
-            context.performRescue(body, rubyHandler, rescueInspector.getFlag(ASTInspector.RETRY));
+            context.performRescue(body, rubyHandler, elseBody, rescueInspector.getFlag(ASTInspector.RETRY));
         }
     }
 
