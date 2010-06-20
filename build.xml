@@ -437,6 +437,7 @@
         <fileset dir="${basedir}">
           <patternset refid="dist.bindir.files"/>
           <patternset refid="dist.lib.files"/>
+          <patternset refid="dist.cext.files"/>
         </fileset>
       </copy>
 
@@ -527,6 +528,7 @@
         <fileset dir="${basedir}">
           <patternset refid="dist.bindir.files"/>
           <patternset refid="dist.lib.files"/>
+          <patternset refid="dist.cext.files"/>
         </fileset>
       </copy>
 
@@ -1213,6 +1215,10 @@
     <include name="lib/ruby/gems/1.8/gems/sources-0.0.1/**"/>
   </patternset>
 
+  <patternset id="dist.cext.files">
+    <include name="cext/**"/>
+  </patternset>
+
   <patternset id="dist.files">
     <include name="lib/*"/>
     <include name="samples/**"/>
@@ -1282,6 +1288,7 @@
       <fileset dir="${basedir}">
         <patternset refid="dist.bindir.files"/>
         <patternset refid="dist.lib.files"/>
+        <patternset refid="dist.cext.files"/>
       </fileset>
     </copy>
     <!-- dist-bin by default does not come w/ unix native launcher, so -->
@@ -1338,6 +1345,7 @@
       <fileset dir="${basedir}">
         <patternset refid="dist.bindir.files"/>
         <patternset refid="dist.lib.files"/>
+        <patternset refid="dist.cext.files"/>
       </fileset>
     </copy>
     <rake task="install_dist_gems"/>

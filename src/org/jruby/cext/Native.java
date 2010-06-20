@@ -39,6 +39,7 @@ final class Native {
     private static Native INSTANCE;
     private static Library shim = null; // keep a hard ref to avoid GC
     private static final String libName = "jruby-cext";
+    private static final String jrubyHome = Ruby.getGlobalRuntime().getJRubyHome();
 
     public synchronized static final Native getInstance(Ruby runtime) {
         if (INSTANCE == null) {
@@ -49,14 +50,13 @@ final class Native {
         return INSTANCE;
     }
 
-
     private void load(Ruby runtime) {
         if (shim != null) return;
 
         // Force the shim library to load into the global namespace
         shim = Library.openLibrary(System.mapLibraryName(libName), Library.NOW | Library.GLOBAL);
         if (shim == null) {
-            File libFile = loadOutsideLibraryPath();
+            File libFile = loadFromJrubyHome();
             shim = Library.openLibrary(libFile.getAbsolutePath(), Library.NOW | Library.GLOBAL);
             if (shim == null) {
                 throw new UnsatisfiedLinkError("failed to load shim library, error: " + Library.getLastError());
@@ -74,7 +74,7 @@ final class Native {
         initNative(runtime);        
     }
     
-    private File loadOutsideLibraryPath() {
+    private File loadFromJrubyHome() {
         URL fileUrl = Native.class.getResource(getCextLibraryPath());
         if (fileUrl.getProtocol().equals("jar")) {
             return loadFromJar();
@@ -124,16 +124,10 @@ final class Native {
      */
     private static final InputStream getCextLibraryStream() {
         String path = getCextLibraryPath();
-
         InputStream is = Native.class.getResourceAsStream(path);
-
-        // On MacOS, the stub might be named .dylib or .jnilib - cater for both
-        if (is == null && Platform.getPlatform().getOS() == Platform.OS.DARWIN) {
-            is = Init.class.getResourceAsStream(path.replaceAll("dylib", "jnilib"));
-        }
+        
         if (is == null) {
-            throw new UnsatisfiedLinkError("Could not locate jruby-cext ("
-                    + path + ") in jar file");
+            throw new UnsatisfiedLinkError("Could not locate jruby-cext (" + path + ") in jar file");
         }
 
         return is;
@@ -146,7 +140,12 @@ final class Native {
      */
     private static final String getCextLibraryPath() {
         //return "/cext/" + Platform.getPlatform().getName() + "/"+ System.mapLibraryName(libName);
-        return "/cext/build/"+ System.mapLibraryName(libName);
+        String prefix = "/cext/build/";
+        if (jrubyHome.startsWith("file:")) {
+            // jrubyHome is in Jar file
+            prefix = jrubyHome.substring(jrubyHome.indexOf("jar!") + "jar!".length()) + prefix;
+        }
+        return prefix + System.mapLibraryName(libName);        
     }
 
     private final native void initNative(Ruby runtime);
